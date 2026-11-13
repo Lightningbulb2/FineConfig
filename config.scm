@@ -102,7 +102,7 @@
           (name 'hyperguix)
           (url "https://github.com/Lightningbulb2/hyperguix.git")
           (branch "main")
-          (commit "6ac57a0bf00cfc1e65de62db9248006db567aafe"))))
+          (commit "8003b3a0a8306f2b23d4a46698d0b543280df641"))))
 
 
 ;;; =========================================================================
