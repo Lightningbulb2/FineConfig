@@ -104,7 +104,7 @@
           (name 'hyperguix)
           (url "https://github.com/Lightningbulb2/hyperguix.git")
           (branch "main")
-          (commit "2bf476c7264ad7362108864e1b66630af28cdd74"))))
+          (commit "2c9f0992007ecaa1b5bba43a67d494df93c9a9ee"))))
 
 
 ;;; =========================================================================
@@ -156,7 +156,7 @@
 (define (my-home)
   (home-environment
     (packages
-     (append (map app (cons "guix-bump" %apps))
+     (append (map app (cons* "guix-bump" "guix-updates" %apps))
              (if %steam?
                  (list ((from '(nongnu packages game-client) 'steam-for)
                         (graphics-driver)))

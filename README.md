@@ -53,6 +53,9 @@ than an isolated channel list. That is fine for a local file you wrote.
 
 ## Usage
 
+The app **Updates** lists the apps that have a newer version and updates
+them with a click. It runs the commands below, which you can also type:
+
 | Command | Does |
 |---|---|
 | `guix bump` | list channels: pinned, running and latest commit |
