@@ -55,8 +55,9 @@
 ;; Desktop: 'cosmic, 'plasma or 'gnome.
 (define %desktop 'cosmic)
 
-;; Your apps, by package name (find names with `guix search WORD').  These
-;; go in the home environment: changing the list only needs
+;; Your apps, by package name ("NAME", or "NAME@VERSION" to keep a version).
+;; The app Guix Manager and `guix bump --install NAME' / `--remove NAME'
+;; edit this list for you and apply it; after editing it by hand, run
 ;; `guix bump --home'.
 (define %apps
   '("firefox" "git" "libreoffice" "flatpak"
@@ -104,7 +105,7 @@
           (name 'hyperguix)
           (url "https://github.com/Lightningbulb2/hyperguix.git")
           (branch "main")
-          (commit "2c9f0992007ecaa1b5bba43a67d494df93c9a9ee"))))
+          (commit "96587050d293cf7ac0fbff587046ba7ac819021a"))))
 
 
 ;;; =========================================================================
@@ -156,7 +157,7 @@
 (define (my-home)
   (home-environment
     (packages
-     (append (map app (cons* "guix-bump" "guix-updates" %apps))
+     (append (map app (cons* "guix-bump" "guix-manager" %apps))
              (if %steam?
                  (list ((from '(nongnu packages game-client) 'steam-for)
                         (graphics-driver)))

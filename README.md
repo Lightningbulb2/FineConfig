@@ -53,8 +53,9 @@ than an isolated channel list. That is fine for a local file you wrote.
 
 ## Usage
 
-The app **Updates** lists the apps that have a newer version and updates
-them with a click. It runs the commands below, which you can also type:
+The app **Guix Manager** updates, installs and removes apps with a click,
+and writes each change into `config.scm`. It runs the commands below in its
+own terminal pane; you can also type them:
 
 | Command | Does |
 |---|---|
@@ -62,6 +63,9 @@ them with a click. It runs the commands below, which you can also type:
 | `guix bump all` | move every pin to the latest commit and pull |
 | `guix bump --check` | list the installed apps that have a newer version |
 | `guix bump firefox` | update that app now (its channel moves; no logout) |
+| `guix bump --search WORD` | find a package |
+| `guix bump --install NAME` | install it: adds it to `%apps` and applies |
+| `guix bump --remove NAME` | take it out of `%apps` and uninstall it |
 | `guix bump nonguix -H` | update one channel and install the result |
 | `guix bump --home` | apply your edits to the apps / home part |
 | `guix bump --system` | apply the system and the home (sudo) |
