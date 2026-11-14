@@ -57,6 +57,8 @@ than an isolated channel list. That is fine for a local file you wrote.
 |---|---|
 | `guix bump` | list channels: pinned, running and latest commit |
 | `guix bump all` | move every pin to the latest commit and pull |
+| `guix bump --check` | list the installed apps that have a newer version |
+| `guix bump firefox` | update that app now (its channel moves; no logout) |
 | `guix bump nonguix -H` | update one channel and install the result |
 | `guix bump --home` | apply your edits to the apps / home part |
 | `guix bump --system` | apply the system and the home (sudo) |
