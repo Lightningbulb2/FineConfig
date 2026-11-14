@@ -6,7 +6,8 @@
 ;;;   channels   guix pull -C config.scm --unsafe-channel-evaluation
 ;;;   home       guix home reconfigure config.scm          (your apps; no sudo)
 ;;;   system     sudo guix system reconfigure config.scm   (kernel, drivers,
-;;;                                                         services, desktop)
+;;;                                                         services, desktop;
+;;;                                                         applies home too)
 ;;;
 ;;; Day to day, `guix bump' does this for you: see README.md.
 
@@ -18,6 +19,7 @@
              (gnu services dbus)
              (gnu services desktop)
              (gnu services sddm)
+             (gnu services shepherd)
              (gnu services xorg)
              (guix channels)
              (ice-9 match)
@@ -102,7 +104,7 @@
           (name 'hyperguix)
           (url "https://github.com/Lightningbulb2/hyperguix.git")
           (branch "main")
-          (commit "b59feaee2691225b2f9421d2e6b97976a2016782"))))
+          (commit "9ed0a37d5bd304787915baf1b11a4c72879bd18f"))))
 
 
 ;;; =========================================================================
@@ -148,8 +150,8 @@
 ;;; 3. HOME: your apps and per-user settings
 ;;; =========================================================================
 ;;; Applied by `guix home reconfigure' / `guix bump --home': no sudo, in
-;;; effect at once.  Not part of the system: a system reconfigure leaves it
-;;; alone.
+;;; effect at once.  A system reconfigure applies it too (see
+;;; `home-with-system-service' below).
 
 (define (my-home)
   (home-environment
@@ -169,6 +171,62 @@
            ;;                 home-environment-variables-service-type
            ;;                 '(("EDITOR" . "nano")))
            ))))
+
+(define (home-with-system-service user home)
+  ;; Makes a system reconfigure (and a boot into another system generation)
+  ;; apply HOME for USER, as a new home generation.  It does so only when
+  ;; the system's home changed since the system last applied one, so a
+  ;; `guix home reconfigure' done on its own is not undone by the next boot.
+  (define apply-home
+    (program-file
+     "apply-home"
+     (with-imported-modules '((guix build utils))
+       #~(begin
+           (use-modules (guix build utils) (ice-9 rdelim) (ice-9 regex))
+           (let* ((new     #$home)
+                  (pw      (getpwuid (getuid)))
+                  (state   (string-append (passwd:dir pw)
+                                          "/.local/state/guix-bump"))
+                  (marker  (string-append state "/system-home"))
+                  (profile (string-append "/var/guix/profiles/per-user/"
+                                          (passwd:name pw) "/guix-home"))
+                  (current (false-if-exception (canonicalize-path profile)))
+                  (applied (false-if-exception
+                            (call-with-input-file marker read-line))))
+             (setenv "HOME" (passwd:dir pw))
+             (unless (equal? applied new)
+               (unless (equal? current new)
+                 (let* ((link   (false-if-exception (readlink profile)))
+                        (match  (and link
+                                     (string-match "-([0-9]+)-link$" link)))
+                        (number (if match
+                                    (string->number (match:substring match 1))
+                                    0))
+                        (generation (format #f "~a-~a-link" profile
+                                            (+ 1 number))))
+                   (mkdir-p (dirname profile))
+                   (switch-symlinks generation new)
+                   (switch-symlinks profile generation))
+                 (setenv "GUIX_NEW_HOME" new)
+                 (setenv "GUIX_SYSTEM_IS_RUNNING_HOME_ACTIVATE" "t")
+                 (unless (zero? (system* (string-append new "/activate")))
+                   (exit 1)))
+               (mkdir-p state)
+               (call-with-output-file marker
+                 (lambda (port) (display new port) (newline port)))))))))
+  (simple-service
+   'home-with-system shepherd-root-service-type
+   (list (shepherd-service
+          (documentation "Apply the home environment of this system.")
+          (provision '(home-with-system))
+          (requirement '(user-processes))
+          (one-shot? #t)
+          (start #~(make-forkexec-constructor
+                    (list #$apply-home)
+                    #:user #$user
+                    #:group (and=> (false-if-exception (getpw #$user))
+                                   (compose group:name getgrgid passwd:gid))))
+          (stop #~(make-kill-destructor))))))
 
 
 ;;; =========================================================================
@@ -294,6 +352,10 @@
                       %base-packages))
 
     (services (append (desktop-services)
+                      ;; A system reconfigure applies the home too.  (For
+                      ;; NVIDIA, `with-graphics-driver' around the system
+                      ;; reaches this home as well.)
+                      (list (home-with-system-service %user (my-home)))
                       ;; More system services go here, for example:
                       ;; (list (service openssh-service-type)
                       ;;       (service cups-service-type))   ;printing

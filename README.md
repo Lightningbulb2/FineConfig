@@ -5,7 +5,8 @@ A whole Guix System in one file you fill in: `config.scm`.
 ## Goals
 
 - **One file, three parts.** Pinned channels, your apps (home), and the
-  system, each applied by its own command and independent of the others.
+  system. A system reconfigure applies the home too; the home can also be
+  applied on its own, quickly and without sudo.
 - **Everything pinned.** Each channel is fixed to one commit, so the file
   says exactly what is installed and a rebuild gives the same machine.
 - **Small, fast updates.** Updating apps needs no sudo and no system
@@ -40,7 +41,6 @@ On a fresh Guix System install (UEFI):
    guix pull -C ~/config.scm --unsafe-channel-evaluation
    hash guix
    sudo guix system reconfigure ~/config.scm
-   guix home reconfigure ~/config.scm
    ```
 
    Reboot. The very first system reconfigure may compile the kernel, since
@@ -59,7 +59,7 @@ than an isolated channel list. That is fine for a local file you wrote.
 | `guix bump all` | move every pin to the latest commit and pull |
 | `guix bump nonguix -H` | update one channel and install the result |
 | `guix bump --home` | apply your edits to the apps / home part |
-| `guix bump --system` | apply your edits to the system part (sudo) |
+| `guix bump --system` | apply the system and the home (sudo) |
 | `guix bump --undo -H` | go back to the pins from before the last bump |
 | `guix nightly` | bump all, system + home, clean up, power off |
 
@@ -80,7 +80,7 @@ than an isolated channel list. That is fine for a local file you wrote.
   then `guix bump --home`. Steam has its own switch, `%steam?`, because it
   is built for one graphics driver.
 - **Graphics or desktop:** change `%gpu`, `%nvidia-driver` or `%desktop`,
-  then `guix bump --system --home` and reboot.
+  then `guix bump --system` and reboot.
 - **System services** (SSH, printing, ...): add them in `my-system` where
   the comment shows, then `guix bump --system`.
 - **Per-user settings** (environment variables, dotfiles): add home
