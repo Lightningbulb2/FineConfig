@@ -105,7 +105,7 @@
           (name 'hyperguix)
           (url "https://github.com/Lightningbulb2/hyperguix.git")
           (branch "main")
-          (commit "4bc46fb01b7c734050e62b2dffb003968de8898e"))))
+          (commit "cc094450d27ad7310830912cb5b1e9b032cd72a5"))))
 
 
 ;;; =========================================================================
@@ -155,7 +155,10 @@
 ;;; `home-with-system-service' below).
 
 (define (my-home)
-  (home-environment
+  ;; Craft apps (hyperguix) in %apps are built together, so the libraries
+  ;; they share compile once instead of once per app.
+  ((from '(hyperguix packages craft) 'with-craft-suite)
+   (home-environment
     (packages
      (append (map app (cons* "guix-bump" "guix-manager" %apps))
              (if %steam?
@@ -171,7 +174,7 @@
            ;; (simple-service 'my-variables
            ;;                 home-environment-variables-service-type
            ;;                 '(("EDITOR" . "nano")))
-           ))))
+           )))))
 
 (define (home-with-system-service user home)
   ;; Makes a system reconfigure (and a boot into another system generation)
