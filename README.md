@@ -90,6 +90,10 @@ own terminal pane; you can also type them:
   is built for one graphics driver.
 - **Graphics or desktop:** change `%gpu`, `%nvidia-driver` or `%desktop`,
   then `guix bump --system` and reboot.
+- **Ultra Fast boot:** if the BIOS's Fast Boot is set to Ultra Fast, the
+  keyboard doesn't work in the boot menu. Set `%ultra-fast-boot?` to `#t`
+  and run `guix bump --system`: GRUB is then started through the UEFI shell,
+  which turns USB on first. Secure Boot must be off.
 - **System services** (SSH, printing, ...): add them in `my-system` where
   the comment shows, then `guix bump --system`.
 - **Per-user settings** (environment variables, dotfiles): add home

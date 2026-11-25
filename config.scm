@@ -66,6 +66,11 @@
 ;; Steam is built for one graphics driver, so it gets a switch of its own.
 (define %steam? #f)
 
+;; #t if you set the BIOS's Fast Boot to "Ultra Fast" and the keyboard stops
+;; working in the boot menu: GRUB is then started through the UEFI shell,
+;; which turns USB on first (needs Secure Boot off).
+(define %ultra-fast-boot? #f)
+
 ;; Programs every user and root should have.
 (define %system-apps
   '("gnome-keyring"))
@@ -105,7 +110,7 @@
           (name 'hyperguix)
           (url "https://github.com/Lightningbulb2/hyperguix.git")
           (branch "main")
-          (commit "cc094450d27ad7310830912cb5b1e9b032cd72a5"))))
+          (commit "2d45a6948a1596d2f63adbd27e403e3b0e13b265"))))
 
 
 ;;; =========================================================================
@@ -324,7 +329,11 @@
                     %base-firmware))
 
     (bootloader (bootloader-configuration
-                  (bootloader grub-efi-bootloader)
+                  (bootloader
+                   (if %ultra-fast-boot?
+                       (from '(hyperguix packages grub-usb-keyboard)
+                             'grub-efi-usb-keyboard-bootloader)
+                       grub-efi-bootloader))
                   (targets (list "/boot/efi"))
                   (keyboard-layout keyboard-layout)))
 
